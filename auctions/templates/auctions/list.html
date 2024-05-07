@@ -1,0 +1,102 @@
+{% extends "auctions/layout.html" %}
+{% load static %}
+
+{% block body %}
+<div id="content-container">
+    <div class="row lg-10 xl-8 justify-content-center align-items-end">
+        <div class="col-lg-10 ">
+            <text class="display-6 fw-bold position-relative position-relative pb-3">{{product.title}}
+                <span class="position-absolute badge  text-bg-light " style="font-size: 0.70rem;">
+                    watchlist
+                </span>
+            </text>
+        </div>
+        {%if product.imageurl != ''%}
+        <div class="col-lg-10 mt-5 text-center">
+            <img src={{product.imageurl}} class="img-fluid" alt="...">
+        </div>
+        {%endif%}
+        {%if maxbid != None %}
+        <div class="col-lg-10">
+            <h3 class="fw-3 mt-0 mb-0"><small>price: </small>${{maxbid.price}}</h3>
+            <small class="text-muted">Initial Price : ${{product.initialprice}}</small>
+        </div>
+        {%else%}
+        <div class="col-lg-10">
+            <h3 class="fw-3 mt-0 mb-0"><small>price: </small>${{product.initialprice}}</h3>
+        </div>
+        {%endif%}
+    </div>
+    <!--Bid Form-->
+    {%if user.is_authenticated and product.active%}
+    <form action="{%url 'list' product.id%}" method="post" id="bidForm"
+        class="row lg-10 xl-8 justify-content-center align-items-end">
+        {%csrf_token%}
+        <div class="col-lg-8 mt-3">
+            {%if msg%}
+            <p class="text-danger mb-0">{{msg}}</p>
+            {%endif%}
+            {% if maxbid and maxbid.user == user%}
+            <label for="bid" class="form-label"> {{product.productbids.all | length}} bids so far (Your bid is
+                current
+                bid):
+            </label>
+            {%else%}
+            <label for="bid" class="form-label"> {{product.productbids.all | length}} bids so far: </label>
+            {% endif %}
+            <input class="form-control mb-2" name="bidinput" id="bidinput"></input>
+
+        </div>
+        <div class="col-lg-2 text-center text-lg-start">
+            <button type="submit" value="submit" class="btn btn-primary px-5 mb-2" id="bidbutton">Bid</button>
+            {% if maxbid %}
+            <div id="maxBid" data-maxbid="{{ maxbid.price }}" data-productid="{{product.id}}"></div>
+            {%else%}
+            <div id="maxBid" data-maxbid="{{ product.initialprice }}" data-productid="{{product.id}}"></div>
+            {%endif%}
+        </div>
+
+        <div class="col-lg-10 text-start" id="error-message" style="display: none; color: red;">Your input is
+            incorrect.
+        </div>
+    </form>
+    {%endif%}
+
+    <section class="my-3" id="sectiondescription">
+        <div class="row lg-10 xl-8 justify-content-center">
+            <div class="col-lg-10 bg-light ">
+                <p class="text-muted">{{product.description}}</p>
+            </div>       
+        </div>
+    </section>
+    
+
+<!--Close section-->
+{% if user.is_authenticated and user == product.creatoruser%}
+<section id="sectionclose">
+    <div class="row justify-content-center">
+        <div class="col-4 col-md-2 text-center">
+            <button class="btn btn-danger w-100" {% if not product.active %}disabled data-toggle="tooltip" data-placement="top" title="The item is not active anymore"{% endif %} data-bs-toggle="modal" data-bs-target="#staticBackdrop" >Close Auction</button>          
+        </div>
+    </div>
+  <!-- Modal -->
+  <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-body">
+          Are you Sure you want to Close the list
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" id="closeauction" data-product="{{ product.id }}">Close Auction</button>
+          <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </div> 
+  {% endif %}
+
+{% endblock %}
+
+{% block bodyscript %}
+    <script src="{% static 'auctions/list.js' %}"></script>
+{% endblock %}

@@ -43,3 +43,14 @@ class Bid(models.Model):
 
 class Comment(models.Model):
     pass
+
+
+class Watchlist(models.Model):
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, null=False, related_name='watchlist')
+    product = models.ForeignKey(
+        Products, on_delete=models.CASCADE, null=False, related_name='watched_by')
+
+    class Meta:
+        # Enforce uniqueness constraint on combination of user and product
+        unique_together = ['user', 'product']

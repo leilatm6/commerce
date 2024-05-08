@@ -10,5 +10,7 @@ urlpatterns = [
     path("register", views.register, name="register"),
     path("list/<int:listid>", views.list, name="list"),
     path('closelist', views.closelist, name='closelist'),
+    path('watchlist/<int:productid>/<int:userid>',
+         views.watchlist, name='watchlist'),
 
 ]

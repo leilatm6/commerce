@@ -18,6 +18,34 @@ def index(request):
     })
 
 
+def has_watchlist_item(product, user):
+    try:
+        Watchlist.objects.get(user=user, product=product)
+        return True
+    except Watchlist.DoesNotExist:
+        return False
+
+
+def watchlist(request, productid, userid):
+    try:
+        user = User.objects.get(pk=userid)
+    except user.DoesNotExist:
+        ###########################
+        raise Http404("User does not exist")
+    try:
+        product = Products.objects.get(pk=productid)
+    except product.DoesNotExist:
+        ###############################
+        raise Http404("Auction Listing does not exist")
+    if has_watchlist_item(product, user):
+        watchlist_item = Watchlist.objects.get(product=product, user=user)
+        watchlist_item.delete()
+    else:
+        new_watchlist_item = Watchlist(product=product, user=user)
+        new_watchlist_item.save()
+    return HttpResponseRedirect(reverse("list", kwargs={'listid': product.id}))
+
+
 @login_required
 def createlisting(request):
     if request.method == "POST":
@@ -45,29 +73,37 @@ def list(request, listid):
     except Products.DoesNotExist:
         ###########################################
         raise Http404("Auction Listing does not exist")
+    section = None
     max_bid_price = product.initialprice
     max_bid = None
     if len(product.productbids.all()) > 0:
         max_bid_price = Bid.objects.filter(product=product).aggregate(
             maxbid=Max('price'))['maxbid']
         max_bid = Bid.objects.filter(price=max_bid_price).first()
-
+    watchlist = False
+    if has_watchlist_item(listid, request.user):
+        watchlist = True
+    print(watchlist)
     if request.method == "POST":
+        section = 'bid'
         newbidprice = int(request.POST["bidinput"])
         if newbidprice <= max_bid_price:
             return render(request, "auctions/list.html", {
                 "product": product,
                 "maxbid": max_bid,
-                "msg": f"Your bid should be greater than {max_bid_price}"
+                "msg": f"Your bid should be greater than {max_bid_price}",
+                "iswatchlist": watchlist,
+                "section": section
             })
             return HttpResponse("Invalid request", status=400)
         newbid = Bid(price=newbidprice, product=product, user=request.user)
         newbid.save()
-
         max_bid = newbid
     return render(request, "auctions/list.html", {
         "product": product,
-        "maxbid": max_bid
+        "maxbid": max_bid,
+        "iswatchlist": watchlist,
+        "section": section
     })
 
 

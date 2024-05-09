@@ -42,47 +42,79 @@
     <!--Bid Form-->
     <section id="sectionbid">
     {%if user.is_authenticated and product.active%}
-    <form action="{%url 'list' product.id%}" method="post" id="bidForm"
-        class="row lg-10 xl-8 justify-content-center align-items-end">
-        {%csrf_token%}
-        <div class="col-lg-8 mt-3">
-            {%if msg%}
-            <p class="text-danger mb-0">{{msg}}</p>
-            {%endif%}
-            {% if maxbid and maxbid.user == user%}
-            <label for="bidinput" class="form-label"> {{product.productbids.all | length}} bids so far (Your bid is
-                current
-                bid):
-            </label>
-            {%else%}
-            <label for="bidinput" class="form-label"> {{product.productbids.all | length}} bids so far: </label>
-            {% endif %}
-            <input class="form-control mb-2" name="bidinput" id="bidinput"></input>
-        </div>
-        <div class="col-lg-2 text-center text-lg-start">
-            <button type="submit" value="submit" class="btn btn-primary px-5 mb-2" id="bidbutton">Bid</button>
-            {% if maxbid %}
-            <div id="maxBid" data-maxbid="{{ maxbid.price }}" data-productid="{{product.id}}"></div>
-            {%else%}
-            <div id="maxBid" data-maxbid="{{ product.initialprice }}" data-productid="{{product.id}}"></div>
-            {%endif%}
-        </div>
+        <form action="{%url 'list' product.id%}" method="post" id="bidForm"
+            class="row lg-10 xl-8 justify-content-center align-items-end">
+            {%csrf_token%}
+            <div class="col-lg-8 mt-3">
+                {%if msg%}
+                <p class="text-danger mb-0">{{msg}}</p>
+                {%endif%}
+                {% if maxbid and maxbid.user == user%}
+                <label for="bidinput" class="form-label"> {{product.productbids.all | length}} bids so far <span class="text-success"> (Your bid is the current bid):</span>
+                </label>
+                {%else%}
+                <label for="bidinput" class="form-label"> {{product.productbids.all | length}} bids so far: </label>
+                {% endif %}
+                <input class="form-control mb-2" name="bidinput" id="bidinput"></input>
+            </div>
+            <div class="col-lg-2 text-center text-lg-start">
+                <button type="submit" value="submit" class="btn btn-primary px-5 mb-2" id="bidbutton">Bid</button>
+                {% if maxbid %}
+                <div id="maxBid" data-maxbid="{{ maxbid.price }}" data-productid="{{product.id}}"></div>
+                {%else%}
+                <div id="maxBid" data-maxbid="{{ product.initialprice }}" data-productid="{{product.id}}"></div>
+                {%endif%}
+            </div>
 
-        <div class="col-lg-10 text-start" id="error-message" style="display: none; color: red;">Your input is
-            incorrect.
-        </div>
-    </form>
+            <div class="col-lg-10 text-start" id="error-message" style="display: none; color: red;">Your input is
+                incorrect.
+            </div>
+        </form>
     {%endif%}
      </section>
 
+    <!--description-->
     <section class="my-3" id="sectiondescription">
         <div class="row lg-10 xl-8 justify-content-center">
             <div class="col-lg-10 bg-light ">
-                <p class="text-muted">{{product.description}}</p>
+            {% if product.description %}
+                <p class="text-muted">Description: {{product.description}}</p>
+            {% else %}
+                <p class="text-muted">No description for this item</p>
+            {% endif%}
             </div>       
         </div>
     </section>
     
+    <!--Comments-->
+    {% if user.is_authenticated %}
+    <section id = "sectioncomment">
+        <div class="row lg-10 xl-8 justify-content-center">
+            <div class="col-lg-6 ">
+                <div class="card" >
+                    <div class="card-header">
+                      Comments
+                    </div>
+                    <ul class="list-group list-group-flush">
+                    {% for comment in comments%}
+                    <li class="list-group-item">                    
+                        <p class="mt-0 mb-0"><small><em>{{comment.user.username}}</em>: {{comment.text}}</small></p>
+                        <p class="mt-0 mb-0 muted"style="font-size :10px">{{comment.datetime}}</p>                   
+                    </li>
+                    {%endfor%}
+                    </ul>
+                  </div>
+                
+            </div>
+            <div class="col-lg-8  bg-light">
+                <div class="form-floating">
+                    <textarea class="form-control" placeholder="Leave a comment here" id="floatingTextarea"></textarea>
+                </div>
+                <button class="btn btn-primary" id="commentbutton" data-product="{{product.id}}" disabled>Submit</button>
+            </div>
+        </div>
+    </section>
+    {% endif%}
 
     <!--Close section-->
     {% if user.is_authenticated and user == product.creatoruser%}
@@ -97,7 +129,7 @@
         <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-body">
-            Are you Sure you want to Close the list
+            Are you Sure you want to Close the list?
             </div>
             <div class="modal-footer">
             <button type="button" class="btn btn-secondary" id="closeauction" data-product="{{ product.id }}">Close Auction</button>

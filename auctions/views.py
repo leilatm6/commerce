@@ -83,7 +83,8 @@ def list(request, listid):
     watchlist = False
     if has_watchlist_item(listid, request.user):
         watchlist = True
-    print(watchlist)
+    comments = Comments.objects.filter(
+        product=product).order_by('datetime')
     if request.method == "POST":
         section = 'bid'
         newbidprice = int(request.POST["bidinput"])
@@ -93,21 +94,50 @@ def list(request, listid):
                 "maxbid": max_bid,
                 "msg": f"Your bid should be greater than {max_bid_price}",
                 "iswatchlist": watchlist,
-                "section": section
+                "section": section,
+                "comments": comments
             })
             return HttpResponse("Invalid request", status=400)
         newbid = Bid(price=newbidprice, product=product, user=request.user)
         newbid.save()
         max_bid = newbid
+
     return render(request, "auctions/list.html", {
         "product": product,
         "maxbid": max_bid,
         "iswatchlist": watchlist,
-        "section": section
+        "section": section,
+        "comments": comments
     })
 
 
 @csrf_exempt
+@login_required
+def createcomment(request):
+    print('aaaaaaaaaaaaaaaaaaaaaaaaaa')
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        print(data)
+        textarea = data.get('textarea')
+        productid = data.get('id')
+        print(textarea)
+        print(productid)
+        try:
+            product = Products.objects.get(pk=productid)
+        except Products.DoesNotExist:
+            ###########################################
+            raise Http404("Auction Listing does not exist")
+        new_comment = Comments(
+            user=request.user, product=product, text=textarea, datetime=timezone.now())
+        new_comment.save()
+        response_data = {'message': 'comment added successfully'}
+        return JsonResponse(response_data)
+    else:
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
+
+
+@csrf_exempt
+@login_required
 def closelist(request):
     if request.method == 'POST':
         data = json.loads(request.body)
@@ -117,7 +147,8 @@ def closelist(request):
         except Products.DoesNotExist:
             ###########################################
             raise Http404("Auction Listing does not exist")
-        print(product)
+        if request.user != product.creatoruser:
+            return JsonResponse({'error': 'Method not allowed'}, status=405)
         product.active = False
         product.save()
         response_data = {'message': 'Data closed successfully'}

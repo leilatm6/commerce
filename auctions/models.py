@@ -1,5 +1,6 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+from django.utils import timezone
 
 
 class User(AbstractUser):
@@ -41,10 +42,6 @@ class Bid(models.Model):
         return f"{self.price} for {self.product}"
 
 
-class Comment(models.Model):
-    pass
-
-
 class Watchlist(models.Model):
     user = models.ForeignKey(
         User, on_delete=models.CASCADE, null=False, related_name='watchlist')
@@ -54,3 +51,12 @@ class Watchlist(models.Model):
     class Meta:
         # Enforce uniqueness constraint on combination of user and product
         unique_together = ['user', 'product']
+
+
+class Comments(models.Model):
+    text = models.TextField(blank=None)
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, null=False, related_name='person')
+    product = models.ForeignKey(
+        Products, on_delete=models.CASCADE, null=False, related_name='item')
+    datetime = models.DateTimeField(null=True)

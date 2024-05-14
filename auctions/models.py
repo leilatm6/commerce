@@ -25,7 +25,7 @@ class Products(models.Model):
     datetime = models.DateTimeField(null=True)
     active = models.BooleanField(default=True)
     category = models.ForeignKey(
-        Category, on_delete=models.SET_NULL, null='True', related_name='Products')
+        Category, on_delete=models.SET_NULL, null='True', related_name='products')
 
     def __str__(self):
         return f"{self.title}: {self.description} with price {self.initialprice} and user {self.creatoruser}"

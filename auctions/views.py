@@ -12,10 +12,24 @@ import json
 from django.views.decorators.csrf import csrf_exempt
 
 
-def index(request):
+def index(request, categoryid=None):
+    headername = "Active Listing"
+    if categoryid:
+        try:
+            category = Category.objects.get(pk=categoryid)
+            products = category.products.all()
+        except Category.DoesNotExist:
+            # Handle the case where the category does not exist
+            products = []
+        headername = category.title
+    else:
+        products = Products.objects.filter(active=True)
+        headername = "Active Listing"
+    productset = [(product, Bid.objects.filter(product=product).aggregate(maxbid=Max('price'))['maxbid']
+                   if len(product.productbids.all()) > 0 else product.initialprice) for product in products]
     return render(request, "auctions/index.html", {
-        "products": Products.objects.filter(active=True),
-    })
+        "products": productset,
+        "headername": headername})
 
 
 def has_watchlist_item(product, user):
@@ -26,24 +40,39 @@ def has_watchlist_item(product, user):
         return False
 
 
-def watchlist(request, productid, userid):
-    try:
-        user = User.objects.get(pk=userid)
-    except user.DoesNotExist:
-        ###########################
-        raise Http404("User does not exist")
-    try:
-        product = Products.objects.get(pk=productid)
-    except product.DoesNotExist:
-        ###############################
-        raise Http404("Auction Listing does not exist")
-    if has_watchlist_item(product, user):
-        watchlist_item = Watchlist.objects.get(product=product, user=user)
-        watchlist_item.delete()
+@csrf_exempt
+@login_required
+def watchlist(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        productid = int(data.get('id'))
+        try:
+            product = Products.objects.get(pk=productid)
+        except product.DoesNotExist:
+            ###############################
+            raise Http404("Auction Listing does not exist")
+        if has_watchlist_item(product, request.user):
+            watchlist_item = Watchlist.objects.get(
+                product=product, user=request.user)
+            watchlist_item.delete()
+            iswatchlist = False
+        else:
+            new_watchlist_item = Watchlist(product=product, user=request.user)
+            new_watchlist_item.save()
+            iswatchlist = True
+
+        response_data = {'message': 'updated successfully',
+                         'iswatchlist': iswatchlist}
+        return JsonResponse(response_data)
     else:
-        new_watchlist_item = Watchlist(product=product, user=user)
-        new_watchlist_item.save()
-    return HttpResponseRedirect(reverse("list", kwargs={'listid': product.id}))
+        userwatchlist = Watchlist.objects.filter(user=request.user)
+        if userwatchlist:
+            productset = [(watchlist.product, Bid.objects.filter(product=watchlist.product).aggregate(maxbid=Max('price'))['maxbid']
+                           if len(watchlist.product.productbids.all()) > 0 else watchlist.product.initialprice) for watchlist in userwatchlist]
+            return render(request, "auctions/index.html", {
+                "products": productset,
+                "headername": "Your Watchlist"
+            })
 
 
 @login_required
@@ -114,7 +143,6 @@ def list(request, listid):
 @csrf_exempt
 @login_required
 def createcomment(request):
-    print('aaaaaaaaaaaaaaaaaaaaaaaaaa')
     if request.method == 'POST':
         data = json.loads(request.body)
         print(data)
@@ -134,6 +162,12 @@ def createcomment(request):
         return JsonResponse(response_data)
     else:
         return JsonResponse({'error': 'Method not allowed'}, status=405)
+
+
+def category(request):
+    return render(request, "auctions/category.html", {
+        "categories": Category.objects.all(),
+    })
 
 
 @csrf_exempt

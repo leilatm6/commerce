@@ -1,6 +1,5 @@
 document.addEventListener('DOMContentLoaded', function() {
   
-
     if (section == "bid"){
         document.getElementById('sectionbid').scrollIntoView({
             behavior: 'smooth'

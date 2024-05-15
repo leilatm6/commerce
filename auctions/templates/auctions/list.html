@@ -2,15 +2,24 @@
 {% load static %}
 
 {% block body %}
+
+
 <div id="content-container">
     <div class="row lg-10 xl-8 justify-content-center align-items-end">
+        
 
         <!--Watchlis--> 
         <div class="col-lg-10 mb-3">
+            {%if not product.active and user == maxbid.user %}
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <strong>Congratulation!</strong> You win this bid
+            </div>
+            {%endif%}
             <text class="display-5 fw-bold position-relative position-relative pb-3 ">{{product.title}}              
                 <span class="position-absolute badge  text-bg-light " style="font-size: 0.70rem;">
                     <button class="bg-light" id="watchlistbutton" style="background-color: inherit !important; 
                         border:none" onclick="this.blur()">
+                    {% if user.is_authenticated%}
                     watchlist
                     <span id="svg-container">
                     {% if not iswatchlist %}
@@ -23,15 +32,18 @@
                       </svg>
                     {%endif%}
                     </span>
+                    {%endif%}
                 </button>
-                </span>
-           
+                </span>         
             </text>
+            {%if not product.active%}
+            <p class ="text-warning">This item is closed</p>
+            {%endif%}
        
         </div>
         {%if product.imageurl != ''%}
         <div class="col-lg-10 text-center">
-            <img src={{product.imageurl}} class="img-fluid" alt="...">
+            <img src={{product.imageurl}} class="img-fluid" style="max-width: 100%; max-height: 400px" alt="...">
         </div>
         {%endif%}
         {%if maxbid != None %}
@@ -80,11 +92,11 @@
      </section>
 
     <!--description-->
-    <section class="my-3" id="sectiondescription">
+    <section class="mt-3" id="sectiondescription">
         <div class="row lg-10 xl-8 justify-content-center">
-            <div class="col-lg-10 bg-light ">
+            <div class="col-lg-10 bg-light">
             {% if product.description %}
-                <p class="text-muted">Description: {{product.description}}</p>
+                <p class="text-muted"><strong>Description: </strong>{{product.description}}</p>
             {% else %}
                 <p class="text-muted">No description for this item</p>
             {% endif%}
@@ -92,15 +104,27 @@
         </div>
     </section>
     
+    {%if product.category %}
+    <!--Categories-->
+    <section id="sectioncategory">
+        <div class="row lg-10 xl-8 justify-content-center">
+            <div class="col-lg-10 bg-light ">
+                <p ><strong>Category:</strong> {{product.category}}</p>
+            </div>       
+        </div>
+    </section>
+    {%endif%}
+    
+
+
     <!--Comments-->
-    {% if user.is_authenticated %}
     <section id = "sectioncomment">
         <div class="row lg-10 xl-8 justify-content-center mt-4 mb-4">
             {%if comments%}
             <div class="col-lg-6 ">
                 <div class="card" >
                     <div class="card-header">
-                      Comments
+                        <strong>Comments</strong>
                     </div>
                     <ul class="list-group list-group-flush">
                         {% for comment in comments%}
@@ -119,15 +143,18 @@
                 </div>
             </div>
             {%endif%}
+            <!--Comment Box-->
+            {% if user.is_authenticated %}
             <div class="col-lg-8  bg-light">
                 <div class="form-floating">
                     <textarea class="form-control" placeholder="Leave a comment here" id="floatingTextarea"></textarea>
                 </div>
                 <button class="btn btn-primary" id="commentbutton" data-product="{{product.id}}" disabled>Submit</button>
             </div>
+            {% endif%}
         </div>
     </section>
-    {% endif%}
+    
 
     <!--Close section-->
     {% if user.is_authenticated and user == product.creatoruser%}

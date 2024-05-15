@@ -28,7 +28,7 @@ class Products(models.Model):
         Category, on_delete=models.SET_NULL, null='True', related_name='products')
 
     def __str__(self):
-        return f"{self.title}: {self.description} with price {self.initialprice} and user {self.creatoruser}"
+        return f"{self.title}: with price {self.initialprice} and user {self.creatoruser}"
 
 
 class Bid(models.Model):

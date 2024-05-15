@@ -34,11 +34,9 @@
               {%if max_bid_price > product.initialprice%} {{max_bid_price}}
               {%else%} {{product.initialprice}} {%endif%}
             </p>
-            {%if max_bid_price > product.initialprice%}
             <p class="mt-0" style="font-size: 12px">
               Initial price: {{product.initialprice}}
             </p>
-            {%endif%}
           </div>
           <!--Description-->
           <div class="ml-3">

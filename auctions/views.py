@@ -105,19 +105,21 @@ def list(request, listid):
     section = None
     max_bid_price = product.initialprice
     max_bid = None
-    if len(product.productbids.all()) > 0:
+    lenbids = len(product.productbids.all())
+    if lenbids > 0:
         max_bid_price = Bid.objects.filter(product=product).aggregate(
             maxbid=Max('price'))['maxbid']
         max_bid = Bid.objects.filter(price=max_bid_price).first()
     watchlist = False
-    if has_watchlist_item(listid, request.user):
-        watchlist = True
+    if request.user.is_authenticated:
+        if has_watchlist_item(product, request.user):
+            watchlist = True
     comments = Comments.objects.filter(
         product=product).order_by('datetime')
     if request.method == "POST":
         section = 'bid'
         newbidprice = int(request.POST["bidinput"])
-        if newbidprice <= max_bid_price:
+        if newbidprice < max_bid_price or (newbidprice == max_bid_price and lenbids > 0):
             return render(request, "auctions/list.html", {
                 "product": product,
                 "maxbid": max_bid,
@@ -130,7 +132,8 @@ def list(request, listid):
         newbid = Bid(price=newbidprice, product=product, user=request.user)
         newbid.save()
         max_bid = newbid
-
+    print(max_bid.user)
+    print(product.active)
     return render(request, "auctions/list.html", {
         "product": product,
         "maxbid": max_bid,

@@ -1,5 +1,14 @@
 document.addEventListener('DOMContentLoaded', function() {
-  
+    const closeButtons = document.querySelectorAll('.alert .close');
+    closeButtons.forEach(closeButton => {
+    closeButton.addEventListener('click', function() {
+        const alert = this.closest('.alert');
+        if (alert) {
+            alert.remove();
+        }
+    });
+    });
+
     if (section == "bid"){
         document.getElementById('sectionbid').scrollIntoView({
             behavior: 'smooth'
@@ -33,6 +42,16 @@ document.addEventListener('DOMContentLoaded', function() {
 
     })
 
+
+    document.getElementById('floatingTextarea').addEventListener('keyup',(event)=>{
+        if (textarea.value.length === 0 ){
+            commentbutton.disabled = true;
+        }
+        else{
+            commentbutton.disabled = false
+        }
+
+    })
 
     //CloseAuction
     let closebut = document.getElementById('closeauction')
@@ -87,5 +106,25 @@ watchlistbut.addEventListener('click',(event)=>{
     });
 
 })
+
+
+const bidarea = document.getElementById('bidinput');
+const bidbutton = document.getElementById('bidbutton');
+
+bidarea.addEventListener('keydown', (event) => {
+    if (!(event.key >= '0' && event.key <= '9') &&
+        !['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Backspace', 'Delete', 'Tab', 'Enter'].includes(event.key)) {
+        event.preventDefault();
+    }
+});
+
+
+if (bidarea.value.trim() === '') {
+    bidbutton.disabled = true;
+}
+
+bidarea.addEventListener('input', () => { 
+    bidbutton.disabled = bidarea.value.trim() === '';
+});
 
 })

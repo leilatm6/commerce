@@ -2,20 +2,16 @@
 {% load static %}
 
 {% block body %}
-
-
 <div id="content-container">
     <div class="row lg-10 xl-8 justify-content-center align-items-end">
-        
-
-        <!--Watchlis--> 
         <div class="col-lg-10 mb-3">
             {%if not product.active and user == maxbid.user %}
             <div class="alert alert-success alert-dismissible fade show" role="alert">
                 <strong>Congratulation!</strong> You win this bid
             </div>
             {%endif%}
-            <text class="display-5 fw-bold position-relative position-relative pb-3 ">{{product.title}}              
+            <text class=" fw-bold position-relative position-relative pb-3 " style="font-size:35px">{%if product.title|length > 20%}{{product.title}}{%else%}<span style="font-size:45px">{{product.title}}</span>{%endif%}
+                <!--Watchlis-->        
                 <span class="position-absolute badge  text-bg-light " style="font-size: 0.70rem;">
                     <button class="bg-light" id="watchlistbutton" style="background-color: inherit !important; 
                         border:none" onclick="this.blur()">
@@ -41,11 +37,17 @@
             {%endif%}
        
         </div>
+        
+
+
         {%if product.imageurl != ''%}
         <div class="col-lg-10 text-center">
+            <hr class="text-center">
             <img src={{product.imageurl}} class="img-fluid" style="max-width: 100%; max-height: 400px" alt="...">
+            <hr class="text-center">
         </div>
         {%endif%}
+
         {%if maxbid != None %}
         <div class="col-lg-10">
             <h5 class="fw-3 mt-0 mb-0"><small>price: </small>${{maxbid.price}}</h5>
@@ -57,23 +59,35 @@
         </div>
         {%endif%}
     </div>
+
     <!--Bid Form-->
     <section id="sectionbid">
     {%if user.is_authenticated and product.active%}
         <form action="{%url 'list' product.id%}" method="post" id="bidForm"
             class="row lg-10 xl-8 justify-content-center align-items-end">
+            
             {%csrf_token%}
             <div class="col-lg-8 mt-3">
-                {%if msg%}
-                <p class="text-danger mb-0">{{msg}}</p>
+                {% if msg_success %}
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <strong>Congratulation!</strong> {{msg_success}}
+                </div>
+                {%endif%}
+                {% if msg_fail %}
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    {{msg_fail}}
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                </div>
+                <!--<p class="text-danger animated-message">{{msg}}</p>-->
                 {%endif%}
                 {% if maxbid and maxbid.user == user%}
-                <label for="bidinput" class="form-label"> {{product.productbids.all | length}} bid(s) so far <span class="text-success"> (Your bid is the current bid)</span>
+                <label for="bidinput" class="form-label"><strong> {{product.productbids.all | length}} </strong> bid(s) so far <span class="text-success animated-message"> (Your bid is the current bid)</span>
                 </label>
                 {%else%}
                 <label for="bidinput" class="form-label"> {{product.productbids.all | length}} bid(s) so far: </label>
                 {% endif %}
-                <input class="form-control mb-2" name="bidinput" id="bidinput"></input>
+                <input class="form-control mb-2" name="bidinput" id="bidinput" autofocus></input>
             </div>
             <div class="col-lg-2 text-center text-lg-start">
                 <button type="submit" value="submit" class="btn btn-primary px-5 mb-2" id="bidbutton">Bid</button>
@@ -83,39 +97,36 @@
                 <div id="maxBid" data-maxbid="{{ product.initialprice }}" data-productid="{{product.id}}"></div>
                 {%endif%}
             </div>
-
-            <div class="col-lg-10 text-start" id="error-message" style="display: none; color: red;">Your input is
-                incorrect.
-            </div>
         </form>
     {%endif%}
      </section>
 
-    <!--description-->
+
+    <!--description Categories seller-->
     <section class="mt-3" id="sectiondescription">
         <div class="row lg-10 xl-8 justify-content-center">
             <div class="col-lg-10 bg-light">
             {% if product.description %}
-                <p class="text-muted"><strong>Description: </strong>{{product.description}}</p>
+                <p class="my-1"><svg xmlns="http://www.w3.org/2000/svg" width="8" height="8" fill="currentColor" class="bi bi-circle-fill" viewBox="0 0 16 16">
+                    <circle cx="8" cy="8" r="8"/>
+                  </svg> Description: <small>{{product.description}}</small></p>
             {% else %}
-                <p class="text-muted">No description for this item</p>
+                <p class="my-1"><strong>Description: </strong><span class="text-muted">No description for this item</span></p>
             {% endif%}
+            <p  class="my-1"><svg xmlns="http://www.w3.org/2000/svg" width="8" height="8" fill="currentColor" class="bi bi-circle-fill" viewBox="0 0 16 16">
+                <circle cx="8" cy="8" r="8"/>
+              </svg> Category:<small> {{product.category}}</small></p>
+            <p  class="my-1"><svg xmlns="http://www.w3.org/2000/svg" width="8" height="8" fill="currentColor" class="bi bi-circle-fill" viewBox="0 0 16 16">
+                <circle cx="8" cy="8" r="8"/>
+              </svg> Creator User:<small> {{product.creatoruser}}</small></p>
+            <p class="my-1"><svg xmlns="http://www.w3.org/2000/svg" width="8" height="8" fill="currentColor" class="bi bi-circle-fill" viewBox="0 0 16 16">
+                <circle cx="8" cy="8" r="8"/>
+              </svg> Created on: <small> {{product.datetime}}</small></p>
+            
             </div>       
         </div>
     </section>
     
-    {%if product.category %}
-    <!--Categories-->
-    <section id="sectioncategory">
-        <div class="row lg-10 xl-8 justify-content-center">
-            <div class="col-lg-10 bg-light ">
-                <p ><strong>Category:</strong> {{product.category}}</p>
-            </div>       
-        </div>
-    </section>
-    {%endif%}
-    
-
 
     <!--Comments-->
     <section id = "sectioncomment">
@@ -157,7 +168,7 @@
     
 
     <!--Close section-->
-    {% if user.is_authenticated and user == product.creatoruser%}
+    {% if product.active and user.is_authenticated and user == product.creatoruser %}
     <section id="sectionclose">
         <div class="row justify-content-center">
             <div class="col-4 col-md-2 text-center">
@@ -177,8 +188,9 @@
             </div>
         </div>
     </div>
+    {% endif %}
 </div> 
-   {% endif %}
+  
 
 {% endblock %}
 

@@ -1,24 +1,39 @@
-{% extends "auctions/layout.html" %}
-
-{% block body %}
-
-    <h2>Login</h2>
-
+{% extends "auctions/layout.html" %} {% block body %}
+<div class="container-md mt-3">
+  <div class="display-4 fw-bold mb-4">Login</div>
     {% if message %}
-        <div>{{ message }}</div>
+    <div>{{ message }}</div>
     {% endif %}
+  </div>
+  <div class="row justify-content-center">
+    <div class="col-md-6 col-lg-4 m-2 text-center">
+      <div class="container bg-light p-5">
+        <form action="{% url 'login' %}" method="post">
+          {% csrf_token %}
+          <div class="form-group">
+            <input
+              autofocus
+              class="form-control"
+              type="text"
+              name="username"
+              placeholder="Username"
+            />
+          </div>
+          <div class="form-group">
+            <input
+              class="form-control"
+              type="password"
+              name="password"
+              placeholder="Password"
+            />
+          </div>
+          <input class="btn btn-primary" type="submit" value="Login" />
+        </form>
 
-    <form action="{% url 'login' %}" method="post">
-        {% csrf_token %}
-        <div class="form-group">
-            <input autofocus class="form-control" type="text" name="username" placeholder="Username">
-        </div>
-        <div class="form-group">
-            <input class="form-control" type="password" name="password" placeholder="Password">
-        </div>
-        <input class="btn btn-primary" type="submit" value="Login">
-    </form>
+        Don't have an account? <a href="{% url 'register' %}">Register here.</a>
+      </div>
+    </div>
 
-    Don't have an account? <a href="{% url 'register' %}">Register here.</a>
-
-{% endblock %}
+    {% endblock %}
+  </div>
+</div>

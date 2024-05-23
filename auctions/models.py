@@ -18,7 +18,7 @@ class Category(models.Model):
 class Products(models.Model):
     title = models.CharField(max_length=64, default="Unnamed Product")
     description = models.TextField(default="No description available")
-    initialprice = models.IntegerField(default=0)
+    initialprice = models.FloatField(default=0.0)
     creatoruser = models.ForeignKey(
         User, on_delete=models.CASCADE, null=True, related_name='products')
     imageurl = models.URLField(null=True)
@@ -32,7 +32,7 @@ class Products(models.Model):
 
 
 class Bid(models.Model):
-    price = models.IntegerField(default=0)
+    price = models.FloatField(default=0.0)
     product = models.ForeignKey(
         Products, on_delete=models.CASCADE, null=True, related_name='productbids')
     user = models.ForeignKey(

@@ -13,6 +13,8 @@ urlpatterns = [
     path("watchlist", views.watchlist, name='watchlist'),
     path("createcomment", views.createcomment, name="createcomment"),
     path("category", views.category, name="category"),
-    path("category/<int:categoryid>/", views.index, name="index_with_category")
+    path("category/<int:categoryid>/",
+         views.categoryselect, name="index_with_category"),
+    path('inactive/', views.inactive_index, name='inactive_index'),
 
 ]

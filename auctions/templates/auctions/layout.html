@@ -3,6 +3,7 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Auctions{% endblock %}</title>
     <link
       rel="stylesheet"
@@ -24,13 +25,22 @@
   </head>
   <body>
     <div class="container-xxl">
-      <div class="row justify-content-end">
-        <div class="col-auto">
-            {% if user.is_authenticated %}
-            Signed in as <strong>{{ user.username }}</strong>. 
-            {% else %} Not signed in. {% endif %}
+      <div class="row justify-content-end align-items-center ">
+          <div class="col-auto mr-0">
+              {% if user.is_authenticated %}
+              Signed in as <strong>{{ user.username }}</strong>. 
+              <a href="{% url 'logout' %}" class="ml-0 mr-0">
+                <span class="text-secondery">Log out</span>
+              {% else %} Not signed in.              
+              <a href="{% url 'login' %}" class="ml-0 mr-2">
+                <span class="text-secondery">Log in</span>
+              </a>
+              <a href="{% url 'register' %}" class="ml-0 mr-3">
+                <span class="text-secondery">Register</span>{% endif %}
+          
+         
         </div>
-    </div>
+      </div>
      
     <nav class="navbar navbar-expand-lg bg-body-tertiary navbar-light bg-light">
       <div class="container-fluid">
@@ -70,30 +80,28 @@
               >
             </li>
             {% endif %}
-           
+           <!--
             {% if user.is_authenticated %}
-            <li class="nav-item">
+            <li class="nav-item d-flex">
               <a class="nav-link" href="{% url 'logout' %}">Log Out</a>
             </li>
             {%endif%}
             {%if not user.is_authenticated%}
-            <li class="nav-item">
+            <li class="nav-item d-flex-reverse">
               <a class="nav-link" href="{% url 'login' %}">Log In</a>
             </li>
             <li class="nav-item">
               <a class="nav-link" href="{% url 'register' %}">Register</a>
             </li>
             {% endif %}
-
+            -->
          
           </ul>
         </div>
       </div>
     </nav>
 
-
-    <hr />
-
+    <hr class="mt-0 mb-5">
     {% block body %} {% endblock %} {% block bodyscript %}{% endblock %}
   </body>
 </html>

@@ -1,60 +1,67 @@
 {% extends "auctions/layout.html" %} {% block body %}
-<div class="display-6 fw-bold">Create Listing</div>
-<div class="container-lg">
-  <form action="{% url 'createlisting' %}" method="post">
-    {%csrf_token%}
-    <div class="row justify-content-around align-content-center mt-5">
-      <div class="col-md-6 col-xl-4 mb-3">
-        <label for="title" class="form-label">Title:</label>
-        <input
-          type="text"
-          class="form-control"
-          id="title"
-          name="title"
-          required
-        />
-      </div>
-      <div class="col-md-6 col-xl-4 mb-3">
-        <label for="price" class="form-label">Price:</label>
-        <input
-          type="text"
-          class="form-control"
-          id="price"
-          name="price"
-          required
-        />
-      </div>
+<div class="container-md mt-3">
+  <div class="display-4 fw-bold mb-4">Create Listing</div>
+  <div class="container-lg bg-light p-2">
+    <form action="{% url 'createlisting' %}" method="post">
+      {%csrf_token%}
+      <div class="row justify-content-around align-content-center mt-5">
+        <div class="col-md-6 col-xl-4 mb-3">
+          <label for="title" class="form-label">Title:</label>
+          <input
+            type="text"
+            class="form-control"
+            id="title"
+            name="title"
+            required
+            autofocus
+          />
+        </div>
+        <div class="col-md-6 col-xl-4 mb-3">
+          <label for="price" class="form-label">Price:</label>
+          <input
+            type="text"
+            class="form-control"
+            id="price"
+            name="price"
+            required
+          />
+        </div>
 
-      <div class="col-xl-10 mb-3">
-        <label for="imageurl" class="form-label">Image URL:</label>
-        <input type="url" class="form-control" id="imageurl" name="imageurl" />
-      </div>
+        <div class="col-xl-10 mb-3">
+          <label for="imageurl" class="form-label">Image URL:</label>
+          <input
+            type="url"
+            class="form-control"
+            id="imageurl"
+            name="imageurl"
+          />
+        </div>
 
-      <div class="col-xl-10 mb-3">
-        <label for="description" class="form-label">Description:</label>
-        <textarea
-          class="form-control"
-          id="description"
-          name="description"
-          rows="3"
-        ></textarea>
-      </div>
+        <div class="col-xl-10 mb-3">
+          <label for="description" class="form-label">Description:</label>
+          <textarea
+            class="form-control"
+            id="description"
+            name="description"
+            rows="3"
+          ></textarea>
+        </div>
 
-      <div class="col-md-6 col-xl-4 mb-3">
-        <label for="category" class="form-label">Category:</label>
-        <select class="form-select" id="category" name="category">
-          <option selected value="-1">Open this select menu</option>
-          {% for cat in category %}
-          <option value="{{cat.id}}">{{cat.title}}</option>
-          {%endfor%}
-        </select>
-      </div>
+        <div class="col-md-6 col-xl-4 mb-3">
+          <select class="custom-select" id="category" name="category">
+            <option selected value="-1">Category:</option>
+            {% for cat in category %}
+            <option value="{{cat.id}}">{{cat.title}}</option>
+            {%endfor%}
+          </select>
+        </div>
 
-      <div class="col-12 mb-3 d-flex align-items-end justify-content-center">
-        <button type="submit" class="btn btn-primary btn-lg">submit</button>
+        <div class="col-12 mb-3 d-flex align-items-end justify-content-center">
+          <button type="submit" class="btn btn-primary btn-lg">submit</button>
+        </div>
       </div>
-    </div>
-  </form>
+    </form>
+  </div>
 </div>
 
 {% endblock %}

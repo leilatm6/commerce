@@ -10,26 +10,34 @@ from django.utils import timezone
 from django.db.models import Max
 import json
 from django.views.decorators.csrf import csrf_exempt
+from django.core.paginator import Paginator
 
 
-def index(request, categoryid=None):
-    headername = "Active Listing"
-    if categoryid:
-        try:
-            category = Category.objects.get(pk=categoryid)
-            products = category.products.all()
-        except Category.DoesNotExist:
-            # Handle the case where the category does not exist
-            products = []
-        headername = category.title
-    else:
-        products = Products.objects.filter(active=True)
-        headername = "Active Listing"
+def paginate_queryset(request, products, items_per_page):
     productset = [(product, Bid.objects.filter(product=product).aggregate(maxbid=Max('price'))['maxbid']
                    if len(product.productbids.all()) > 0 else product.initialprice) for product in products]
+    paginator = Paginator(productset, items_per_page)
+    page_number = request.GET.get('page', 1)
+    page_obj = paginator.get_page(page_number)
+    return page_obj
+
+
+def inactive_index(request):
+    products = Products.objects.filter(active=False).order_by('-datetime')
+    page_obj = paginate_queryset(request, products, 10)
     return render(request, "auctions/index.html", {
-        "products": productset,
-        "headername": headername})
+        "page_obj": page_obj,
+        "headername": 'Closed Listing',
+    })
+
+
+def index(request):
+    products = Products.objects.filter(active=True).order_by('-datetime')
+
+    return render(request, "auctions/index.html", {
+        "page_obj": paginate_queryset(request, products, 10),
+        "headername": 'Active Listing',
+    })
 
 
 def has_watchlist_item(product, user):
@@ -66,13 +74,11 @@ def watchlist(request):
         return JsonResponse(response_data)
     else:
         userwatchlist = Watchlist.objects.filter(user=request.user)
-        if userwatchlist:
-            productset = [(watchlist.product, Bid.objects.filter(product=watchlist.product).aggregate(maxbid=Max('price'))['maxbid']
-                           if len(watchlist.product.productbids.all()) > 0 else watchlist.product.initialprice) for watchlist in userwatchlist]
-            return render(request, "auctions/index.html", {
-                "products": productset,
-                "headername": "Your Watchlist"
-            })
+        productset = [watchlist.product for watchlist in userwatchlist]
+        return render(request, "auctions/index.html", {
+            "page_obj": paginate_queryset(request, productset, 10),
+            "headername": "Your Watchlist",
+        })
 
 
 @login_required
@@ -86,7 +92,6 @@ def createlisting(request):
             category = Category.objects.get(pk=request.POST["category"])
         except ObjectDoesNotExist:
             category = None
-        print(category)
         newproduct = Products(title=title, initialprice=price, description=description, datetime=timezone.now(),
                               category=category, imageurl=imageurl, creatoruser=request.user)
         newproduct.save()
@@ -118,22 +123,27 @@ def list(request, listid):
         product=product).order_by('datetime')
     if request.method == "POST":
         section = 'bid'
-        newbidprice = int(request.POST["bidinput"])
+        newbidprice = float(request.POST["bidinput"])
         if newbidprice < max_bid_price or (newbidprice == max_bid_price and lenbids > 0):
             return render(request, "auctions/list.html", {
                 "product": product,
                 "maxbid": max_bid,
-                "msg": f"Your bid should be greater than {max_bid_price}",
+                "msg_fail": f"Your bid should be greater than {max_bid_price}",
                 "iswatchlist": watchlist,
                 "section": section,
                 "comments": comments
             })
-            return HttpResponse("Invalid request", status=400)
         newbid = Bid(price=newbidprice, product=product, user=request.user)
         newbid.save()
         max_bid = newbid
-    print(max_bid.user)
-    print(product.active)
+        return render(request, "auctions/list.html", {
+            "product": product,
+            "maxbid": max_bid,
+            "msg_success": 'You bid is the current bid',
+            "iswatchlist": watchlist,
+            "section": section,
+            "comments": comments
+        })
     return render(request, "auctions/list.html", {
         "product": product,
         "maxbid": max_bid,
@@ -148,11 +158,8 @@ def list(request, listid):
 def createcomment(request):
     if request.method == 'POST':
         data = json.loads(request.body)
-        print(data)
         textarea = data.get('textarea')
         productid = data.get('id')
-        print(textarea)
-        print(productid)
         try:
             product = Products.objects.get(pk=productid)
         except Products.DoesNotExist:
@@ -170,6 +177,26 @@ def createcomment(request):
 def category(request):
     return render(request, "auctions/category.html", {
         "categories": Category.objects.all(),
+    })
+
+
+def categoryselect(request, categoryid):
+    categories = Category.objects.all()
+    if categoryid > 0:
+        try:
+            category = Category.objects.get(pk=categoryid)
+            products = category.products.all()
+        except Category.DoesNotExist:
+            products = []
+        headername = category.title
+    else:
+        products = Products.objects.filter(active=True).order_by('-datetime')
+        headername = "All Active Listings"
+
+    return render(request, "auctions/categoryselect.html", {
+        "categories": categories,
+        "page_obj": paginate_queryset(request, products, 10),
+        "headername": headername,
     })
 
 
